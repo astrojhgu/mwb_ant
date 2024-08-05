@@ -30,16 +30,16 @@ amp_key_h = 6.5;
 foot_h = 75;
 foot_h1 = 75;
 foot_l1 = 65;
-amp_fix_sheet_thickness = 2;
-amp_fix_sheet_dt = 0.2;
-amp_fix_sheet_dz = 10;
 
 amp_branch_wide = 6;
 amp_branch_dw = 1;
 
-// #import("nut_v3.stl");
-#import("arm.stl");
+square_nut_a = 16;
+square_nut_t = 3.5;
+square_nut_h1 = 10;
 
+// #import("arm.stl");
+// #import("nut_v3.stl");
 module nut_16()
 {
 
@@ -74,6 +74,11 @@ module nut_16()
 			translate([ 0, 0, arm_bolt_l / 2 ])
 			cylinder(d = arm_bolt_plane_d, h = nut_d);
 		}
+
+		translate([ nut_d / 2 - arm_depth, -square_nut_a / 2, arm_root_h / 2 + square_nut_h1 ])
+		{
+			cube([ arm_depth, square_nut_a, square_nut_t ]);
+		}
 	}
 }
 
@@ -85,15 +90,6 @@ module nut_8()
 		{
 			nut_16();
 			mirror([ -1, 1, 0 ]) nut_16();
-		}
-
-		translate([ 0, 0, nut_h / 2 - amp_fix_sheet_dz ])
-		{
-			rotate_extrude(angle = 30)
-			{
-				translate([ amp_chamber_d / 2 - 1, 0, 0 ])
-				square([ amp_key_h + 1, amp_fix_sheet_thickness + amp_fix_sheet_dt ]);
-			}
 		}
 	}
 }
@@ -147,12 +143,85 @@ module arm()
 	}
 }
 
+module square_nut()
+{
+	difference()
+	{
+		translate([ -square_nut_a / 2, -square_nut_a / 2, 0 ])
+		cube([ square_nut_a, square_nut_a, square_nut_t ]);
+		cylinder(h = 50, d = 6);
+	}
+}
+
+module lna()
+{
+	union()
+	{
+		cylinder(d = 35, h = 2);
+
+		for (i = [ 0, 1, 2, 3 ])
+		{
+			rotate([ 0, 0, i * 90 ])
+			union()
+			{
+				translate([ 0, -6.5/2, 0 ])
+				cube([ 24.74, 6.5, 2 ]);
+				translate([ 56/2, 0, 0 ])
+				difference()
+				{
+					cylinder(d = 9.2, h = 2);
+					cylinder(d = 4, h = 2);
+				}
+			}
+		}
+	}
+}
+
+translate([0,0, arm_root_h/2])
+#lna();
+
 for (i = [ 0, 1, 2, 3 ])
 {
-    rotate([ 0, 0, 90 * i ])
-    {
-        nut_4();
-        arm();
-    }
+	rotate([ 0, 0, 90 * i ])
+	translate([ nut_d / 2 - arm_depth + square_nut_a / 2, 0, arm_root_h / 2 + square_nut_h1 ])
+	square_nut();
+}
+
+for (i = [ 0, 1, 2, 3 ])
+{
+	rotate([ 0, 0, 90 * i ])
+	{
+//		nut_4();
+		arm();
+	}
+}
+
+for (i = [ 0, 1, 2, 3 ])
+{
+	rotate([ 0, 0, 90 * i ])
+	{
+		nut_4();
+//		arm();
+	}
+}
+
+/*
+nut_4();
+arm();
+
+rotate([0,0,90])
+nut_4();
+
+rotate([0,0,90])
+arm();
+*/
+
+
+union()
+{
+    rotate([ 90, 0, 0 ])
+    cylinder(h = nut_d / 2 - arm_depth, d = arm_thickness);
+    rotate([ -90, 0, 0 ])
+    cylinder(h = nut_d / 2 - arm_depth, d = arm_thickness);
 }
 
