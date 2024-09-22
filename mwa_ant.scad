@@ -17,8 +17,22 @@ arm_bolt_l = 45;
 arm_bolt_plane_d = 22;
 sma_hole_d = 12;
 sma_hole_r = 11;
+
+foot_pole_d_out=15;
+foot_pole_d_in=6.5;
+foot_plate_h=80;
+foot_plate_w=60;
+foot_plate_t=4;
+
+
 tana = (arm_height / 2 / (dipole_l / 2 - arm_pole_w));
+cosa = 1.0/sqrt(1.0+tana*tana);
+sina = tana/sqrt(1.0+tana*tana);
 arm_half_angle = atan(tana);
+
+echo("sina=",sina);
+echo("cosa=",cosa);
+echo(sina*sina+cosa*cosa);
 
 echo(arm_half_angle);
 
@@ -153,6 +167,57 @@ module square_nut()
 	}
 }
 
+module foot(){
+	x0 = arm_pole_w / sin(arm_half_angle);
+	h=foot_pole_d_out/2/tan((90.0-arm_half_angle)/2.0);
+	hole_venters=[
+		[dipole_l/2-arm_pole_w-foot_pole_d_out/2,0,-(dipole_l / 2 - arm_pole_w - x0) * tana+h],
+		[dipole_l/2-arm_pole_w-foot_pole_d_out/2-(foot_pole_d_out+arm_pole_w)*sin(arm_half_angle),0,-(dipole_l / 2 - arm_pole_w - x0) * tana+h-(foot_pole_d_out+arm_pole_w)*cos(arm_half_angle)],
+		[dipole_l/2+foot_pole_d_out/2,0,-(dipole_l / 2 - arm_pole_w - x0) * tana+h],
+		[dipole_l/2-arm_pole_w/2,0,-arm_height/2-foot_pole_d_out/2],
+	];
+
+	hole_x=[for(v=hole_venters)v[0]];
+	hole_z=[for(v=hole_venters)v[2]];
+	hole_x_min=min(hole_x);
+	hole_x_max=max(hole_x);
+	hole_z_min=min(hole_z);
+	hole_z_max=max(hole_z);
+	plate_x=(hole_x_max+hole_x_min)/2;
+	plate_z=(hole_z_max+hole_z_min)/2;
+
+
+	difference(){
+		for(i=[-1,1]){
+			translate([plate_x, i*(arm_thickness/2+foot_plate_t/2), plate_z])
+			cube([foot_plate_w,foot_plate_t, foot_plate_h],center=true);
+		}
+
+		for(v=hole_venters){
+			translate(v){
+				rotate([90,0,0]){
+					difference(){
+						#cylinder(h=arm_thickness+2*foot_plate_t, d=foot_pole_d_in,center=true);
+					}
+				}
+			}
+		}
+	}
+
+	for(v=hole_venters){
+		translate(v){
+			rotate([90,0,0]){
+				difference(){
+					cylinder(h=arm_thickness, d=foot_pole_d_out,center=true);
+					#cylinder(h=arm_thickness, d=foot_pole_d_in,center=true);
+				}
+			}
+		}
+	}
+
+	
+}
+
 module lna()
 {
 	union()
@@ -177,6 +242,7 @@ module lna()
 	}
 }
 
+
 translate([0,0, arm_root_h/2])
 #lna();
 
@@ -193,6 +259,12 @@ for (i = [ 0, 1, 2, 3 ])
 	{
 //		nut_4();
 		arm();
+	}
+}
+
+for (i = [0, 1, 2, 3]){
+	rotate([0,0,90*i]){
+		foot();
 	}
 }
 
@@ -216,12 +288,13 @@ rotate([0,0,90])
 arm();
 */
 
-
-union()
-{
-    rotate([ 90, 0, 0 ])
-    cylinder(h = nut_d / 2 - arm_depth, d = arm_thickness);
-    rotate([ -90, 0, 0 ])
-    cylinder(h = nut_d / 2 - arm_depth, d = arm_thickness);
+//for feed
+if (false){
+	union()
+	{
+		rotate([ 90, 0, 0 ])
+		cylinder(h = nut_d / 2 - arm_depth, d = arm_thickness);
+		rotate([ -90, 0, 0 ])
+		cylinder(h = nut_d / 2 - arm_depth, d = arm_thickness);
+	}
 }
-
