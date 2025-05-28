@@ -18,21 +18,20 @@ arm_bolt_plane_d = 22;
 sma_hole_d = 12;
 sma_hole_r = 11;
 
-foot_pole_d_out=15;
-foot_pole_d_in=6.5;
-foot_plate_h=80;
-foot_plate_w=60;
-foot_plate_t=4;
-
+foot_pole_d_out = 15;
+foot_pole_d_in = 6.5;
+foot_plate_h = 80;
+foot_plate_w = 60;
+foot_plate_t = 4;
 
 tana = (arm_height / 2 / (dipole_l / 2 - arm_pole_w));
-cosa = 1.0/sqrt(1.0+tana*tana);
-sina = tana/sqrt(1.0+tana*tana);
+cosa = 1.0 / sqrt(1.0 + tana * tana);
+sina = tana / sqrt(1.0 + tana * tana);
 arm_half_angle = atan(tana);
 
-echo("sina=",sina);
-echo("cosa=",cosa);
-echo(sina*sina+cosa*cosa);
+echo("sina=", sina);
+echo("cosa=", cosa);
+echo(sina *sina + cosa * cosa);
 
 echo(arm_half_angle);
 
@@ -98,13 +97,10 @@ module nut_16()
 
 module nut_8()
 {
-	difference()
+	union()
 	{
-		union()
-		{
-			nut_16();
-			mirror([ -1, 1, 0 ]) nut_16();
-		}
+		nut_16();
+		mirror([ -1, 1, 0 ]) nut_16();
 	}
 }
 
@@ -167,56 +163,67 @@ module square_nut()
 	}
 }
 
-module foot(){
+module foot()
+{
 	x0 = arm_pole_w / sin(arm_half_angle);
-	h=foot_pole_d_out/2/tan((90.0-arm_half_angle)/2.0);
-	echo("foot pole d out=",foot_pole_d_out);
-	hole_venters=[
-		[dipole_l/2-arm_pole_w-foot_pole_d_out/2,0,-(dipole_l / 2 - arm_pole_w - x0) * tana+h],
-		[dipole_l/2-arm_pole_w-foot_pole_d_out/2-(foot_pole_d_out+arm_pole_w)*sin(arm_half_angle),0,-(dipole_l / 2 - arm_pole_w - x0) * tana+h-(foot_pole_d_out+arm_pole_w)*cos(arm_half_angle)],
-		[dipole_l/2+foot_pole_d_out/2,0,-(dipole_l / 2 - arm_pole_w - x0) * tana+h],
-		[dipole_l/2-arm_pole_w/2,0,-arm_height/2-foot_pole_d_out/2],
+	h = foot_pole_d_out / 2 / tan((90.0 - arm_half_angle) / 2.0);
+	echo("foot pole d out=", foot_pole_d_out);
+	hole_venters = [
+		[ dipole_l / 2 - arm_pole_w - foot_pole_d_out / 2, 0, -(dipole_l / 2 - arm_pole_w - x0) * tana + h ],
+		[
+			dipole_l / 2 - arm_pole_w - foot_pole_d_out / 2 - (foot_pole_d_out + arm_pole_w) * sin(arm_half_angle), 0,
+			-(dipole_l / 2 - arm_pole_w - x0) * tana + h - (foot_pole_d_out + arm_pole_w) * cos(arm_half_angle)
+		],
+		[ dipole_l / 2 + foot_pole_d_out / 2, 0, -(dipole_l / 2 - arm_pole_w - x0) * tana + h ],
+		[ dipole_l / 2 - arm_pole_w / 2, 0, -arm_height / 2 - foot_pole_d_out / 2 ],
 	];
 
-	hole_x=[for(v=hole_venters)v[0]];
-	hole_z=[for(v=hole_venters)v[2]];
-	hole_x_min=min(hole_x);
-	hole_x_max=max(hole_x);
-	hole_z_min=min(hole_z);
-	hole_z_max=max(hole_z);
-	plate_x=(hole_x_max+hole_x_min)/2;
-	plate_z=(hole_z_max+hole_z_min)/2;
+	hole_x = [for (v = hole_venters) v[0]];
+	hole_z = [for (v = hole_venters) v[2]];
+	hole_x_min = min(hole_x);
+	hole_x_max = max(hole_x);
+	hole_z_min = min(hole_z);
+	hole_z_max = max(hole_z);
+	plate_x = (hole_x_max + hole_x_min) / 2;
+	plate_z = (hole_z_max + hole_z_min) / 2;
 
-
-	difference(){
-		for(i=[-1,1]){
-			translate([plate_x, i*(arm_thickness/2+foot_plate_t/2), plate_z])
-			cube([foot_plate_w,foot_plate_t, foot_plate_h],center=true);
+	difference()
+	{
+		for (i = [ -1, 1 ])
+		{
+			translate([ plate_x, i * (arm_thickness / 2 + foot_plate_t / 2), plate_z ])
+			cube([ foot_plate_w, foot_plate_t, foot_plate_h ], center = true);
 		}
 
-		for(v=hole_venters){
-			translate(v){
-				rotate([90,0,0]){
-					difference(){
-						#cylinder(h=arm_thickness+2*foot_plate_t, d=foot_pole_d_in,center=true);
+		for (v = hole_venters)
+		{
+			translate(v)
+			{
+				rotate([ 90, 0, 0 ])
+				{
+					difference()
+					{
+#cylinder(h = arm_thickness + 2 * foot_plate_t, d = foot_pole_d_in, center = true);
 					}
 				}
 			}
 		}
 	}
 
-	for(v=hole_venters){
-		translate(v){
-			rotate([90,0,0]){
-				difference(){
-					cylinder(h=arm_thickness, d=foot_pole_d_out,center=true);
-					#cylinder(h=arm_thickness, d=foot_pole_d_in,center=true);
+	for (v = hole_venters)
+	{
+		translate(v)
+		{
+			rotate([ 90, 0, 0 ])
+			{
+				difference()
+				{
+					cylinder(h = arm_thickness, d = foot_pole_d_out, center = true);
+#cylinder(h = arm_thickness, d = foot_pole_d_in, center = true);
 				}
 			}
 		}
 	}
-
-	
 }
 
 module lna()
@@ -230,9 +237,9 @@ module lna()
 			rotate([ 0, 0, i * 90 ])
 			union()
 			{
-				translate([ 0, -6.5/2, 0 ])
+				translate([ 0, -6.5 / 2, 0 ])
 				cube([ 24.74, 6.5, 2 ]);
-				translate([ 56/2, 0, 0 ])
+				translate([ 56 / 2, 0, 0 ])
 				difference()
 				{
 					cylinder(d = 9.2, h = 2);
@@ -242,4 +249,3 @@ module lna()
 		}
 	}
 }
-
